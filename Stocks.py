@@ -13,22 +13,6 @@ else:
   stock_list = get_stock_list(option[0])
   df_columns = get_stock_columns(stock_list[0])
 
-
-
-  # testando renomeação de colunas
-  # new_column_names = read_csv('inputs/renamed_columns.csv')
-
-  # for c in new_column_names:
-  #   if (type(c[0].index(df_columns)) == int):
-  #     print('ok')
-  #   else:
-  #     print('NOT!!!')
-    # print(c[0].index(df_columns))
-  # for i in range(1, len(new_column_names)):
-  #   print (df_columns.index(new_column_names[i][0]))
-
-
-
   df = pd.DataFrame(columns=df_columns)
 
   for stock in stock_list:
