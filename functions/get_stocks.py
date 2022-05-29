@@ -8,7 +8,7 @@ headers = {
 }
 base_url = 'https://fundamentus.com.br'
 
-def get_stock_list(sector_id):
+def get_stock_list(sector_id = ''):
   url = base_url+'/resultado.php?setor='+str(sector_id)
   response = requests.get(url, headers=headers)
   content = pd.read_html(response.content)
@@ -82,13 +82,50 @@ def get_stock_information(stock_id):
       
   return data
 
-
-
-def clean_float_columns(df, list_columns, decimal = False):
+def clean_float_columns(df, list_columns, decimalPlaces = 0):
   for col in list_columns:
     df.loc[df[col] == '-', [col]] = [0]
   df[list_columns] = df[list_columns].fillna(0)
-  df[list_columns] = df[list_columns].applymap(lambda x: str(x).replace('.', '').replace('%', '').replace(',', ''))
+  df[list_columns] = df[list_columns].applymap(lambda x: str(x).replace('%', ''))
+  if decimalPlaces == 1:
+    df[list_columns] = df[list_columns].applymap(lambda x: str(x) + '0')
+  df[list_columns] = df[list_columns].applymap(lambda x: str(x).replace('.', '').replace(',', ''))
   df[list_columns] = df[list_columns].astype('float')
-  if decimal:
-    df[list_columns] = df[list_columns]/100
+  if decimalPlaces > 0:
+    df[list_columns] = df[list_columns]/(pow(10, max(2, decimalPlaces)))
+
+def clean_float_fundamentus_dataframe(df):
+  clean_float_columns(df, list(df.iloc[:, [5]].columns), decimalPlaces = 2)
+  clean_float_columns(df, list(df.iloc[:, 7:9].columns), decimalPlaces = 2)
+  clean_float_columns(df, list(df.iloc[:, 9:12].columns))
+  clean_float_columns(df, list(df.iloc[:, [13]].columns))
+  clean_float_columns(df, list(df.iloc[:, 14:31].columns), decimalPlaces = 2)
+  clean_float_columns(df, list(df.iloc[:, [31]].columns), decimalPlaces = 1)
+  clean_float_columns(df, list(df.iloc[:, 32:34].columns), decimalPlaces = 2)
+  clean_float_columns(df, list(df.iloc[:, [34]].columns), decimalPlaces = 1)
+  clean_float_columns(df, list(df.iloc[:, 35:37].columns), decimalPlaces = 2)
+  clean_float_columns(df, list(df.iloc[:, 37:43].columns), decimalPlaces = 1)
+  clean_float_columns(df, list(df.iloc[:, 43:46].columns), decimalPlaces = 2)
+  clean_float_columns(df, list(df.iloc[:, 46:].columns))
+
+
+def createDataframe (stock_list):
+  df_columns = get_stock_columns(stock_list[0])
+  df = pd.DataFrame(columns=df_columns)
+
+  for stock in stock_list:
+    print(stock)
+    try:
+      df_data = get_stock_information(stock)
+      df = pd.concat([df, pd.DataFrame(columns=df_columns, data=[df_data])], ignore_index=True)
+    except:
+      print('Could not get information about', stock)
+    # df_data = get_stock_information(stock)
+    # df_aux = 
+    # print (len(df_aux.columns), '-', len(df_columns), len(df_aux.columns) == len(df_columns))
+    # if (len(df_aux.columns) == len(df_columns)):
+    #   df = pd.concat([df, pd.DataFrame(columns=df_columns, data=[df_data])], ignore_index=True)
+
+  clean_float_fundamentus_dataframe(df)
+
+  return df

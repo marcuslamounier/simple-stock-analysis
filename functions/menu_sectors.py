@@ -2,7 +2,7 @@ from functions.read_csv import read_csv
 
 sectors = read_csv('inputs/sectors.csv')
 
-def menu_stocks():
+def menu_sectors():
   option = -1
   while option < 1 or option > len(sectors) - 1:
     option = int(input("\nDigite o código do setor (0 para ver lista): "))
